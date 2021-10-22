@@ -28,13 +28,18 @@ function setProps(element, props) {
 }
 
 /**
- * 创建虚拟节点
+ * 将虚拟节点渲染为真实DOM节点
  * @param {VDOM} vdom 
  */
  export function createElement(vdom) {
   if(vdom instanceof VDOM) {
     const {tag, props, children} = vdom;
-    let element = document.createElement(tag);
+    let element = null;
+    if(tag === "document-fragment") {
+      element = document.createDocumentFragment();
+    } else {
+      element = document.createElement(tag);
+    }
     setProps(element, props);
     //创建子元素
     children.map(createElement).forEach(element.appendChild.bind(element));

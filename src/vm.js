@@ -1,80 +1,63 @@
-import {isDirective, isElementNode, isTextNode, isEventDirective} from './utils'
+import {isDirective, isElementNode, isTextNode, isEventDirective, node2fragment} from './utils'
 import VDOM, {createElement} from './vdom'
 const textRegex = /\{\{(.*)\}\}/gi
-class vm {
+/**
+ * $vm 借鉴Vue实现
+ * {
+ *  beforeCreate() {},
+ *  created() {},
+ *  beforeMount() {},
+ *  mounted() {},
+ *  beforeUpdate() {},
+ *  updated() {},
+ *  beforeDestory() {},
+ *  destoryed() {},
+ *  data() {return {}},
+ *  methods: {},
+ *  filter: {}
+ * }
+ * @param {*} scope 
+ */
+function vm(scope) {
+  this.$el = null;
+  this.$vm = scope || {};
+  this.$vdom = null;
+}
 
-  constructor(scope) {
-    this.$el = null;
-    this.$scope = scope;
-    this.$vm = null;
-    this.$fragment = null;
-  }
-
-  initFragment(el) {
-    this.$fragment = this.node2fragment(el);
-  }
-
-  // 将根节点转移至文档碎片
-  node2fragment(el) {
-    // 创建文档碎片
-    let fragment = document.createDocumentFragment();
-    let child;
-    // 循环取出根节点中的节点并放入文档碎片中
-    while (child = el.firstChild) {
-      fragment.appendChild(child);
-    }
-    return fragment;
-  }
-
-  /**
-   * 挂载节点
-   * @param {*} el 
-   * @returns 
-   */
+vm.prototype = {
+  constructor: vm,
   mount(el) {
     this.$el = isElementNode(el) ? el : document.querySelector ? document.querySelector(el) : document.getElementById(el.replace(/^#/, ''));
-    this.initFragment(this.$el);
+    let fragment = node2fragment(this.$el);
+    this.$vdom = this.compile(fragment);
     return this;
-  }
-
+  },
 
   /**
-   * 
-   * 编译文档碎片
+   * 编译文档碎片转为虚拟节点
+   * @param {*} fragment 
    */
   compile(fragment) {
-    let childNodes = fragment.childNodes;
-    //转为数组进行遍历
-    Array.from(childNodes).forEach(node => {
-      if(isElementNode(node)) {
-        this.compileElement(node);
-      } else if(isTextNode(node)) {
-        let texts = node.textContent.match(textRegex)
-        if(texts && texts.length) {
-          this.compileText(node, texts);
-        }
-      }
-      if(node.childNodes && node.childNodes.length) {
-        this.compile(node);
-      }
-    })
-  }
-
-  /**
-   * 编译Text内容
-   * @param {*} node 
-   * @param {*} exps 
-   */
-  compileText(node, exps) {
-
-  }
-
-  /**
-   * 编译Element元素
-   */
-  compileElement(node) {
-
+    if(isTextNode(fragment)) {
+      return fragment.nodeValue;
+    }
+    //非文本类型元素
+    let props = {};
+    Array.from(fragment.attributes || []).forEach(function(attr) {
+      props[attr.name] = attr.value;
+    });
+    let nodeName = ("" + fragment.nodeName).replace(/^#/, "");
+    return VDOM(nodeName, props, Array.from(fragment.childNodes).map(node => {
+      return this.compile(node);
+    }))
+  },
+  render() {
+    this.$el.appendChild(createElement(this.$vdom))
   }
 }
 
-export default vm
+vm.createApp = function(scope) {
+  return new vm(scope)
+}
+
+export default vm;

@@ -33,3 +33,19 @@ export function isDirective(attr) {
 export function isEventDirective(dir) {
   return ("" + dir).startsWith('@');
 }
+
+/**
+ * 捕获去除节点信息
+ * @param {*} el 
+ * @returns 
+ */
+export function node2fragment(el) {
+  // 创建文档碎片
+  let fragment = document.createDocumentFragment();
+  let child;
+  // 循环取出根节点中的节点并放入文档碎片中
+  while (child = el.firstChild) {
+    fragment.appendChild(child);
+  }
+  return fragment;
+}
