@@ -1,27 +1,12 @@
 import {isDirective, isElementNode, isTextNode, isEventDirective, node2fragment} from './utils'
-import VDOM, {createElement} from './vdom'
+import VDom, {createElement} from './vdom'
+import VScope from './vscope'
 const textRegex = /\{\{(.*)\}\}/gi
-/**
- * $vm 借鉴Vue实现
- * {
- *  beforeCreate() {},
- *  created() {},
- *  beforeMount() {},
- *  mounted() {},
- *  beforeUpdate() {},
- *  updated() {},
- *  beforeDestory() {},
- *  destoryed() {},
- *  data() {return {}},
- *  methods: {},
- *  filter: {}
- * }
- * @param {*} scope 
- */
-function vm(scope) {
+
+function vm(options) {
   this.$el = null;
-  this.$vm = scope || {};
   this.$vdom = null;
+  this.$vm = new VScope(options || {})
 }
 
 vm.prototype = {
@@ -47,7 +32,7 @@ vm.prototype = {
       props[attr.name] = attr.value;
     });
     let nodeName = ("" + fragment.nodeName).replace(/^#/, "");
-    return VDOM(nodeName, props, Array.from(fragment.childNodes).map(node => {
+    return VDom(nodeName, props, Array.from(fragment.childNodes).map(node => {
       return this.compile(node);
     }))
   },

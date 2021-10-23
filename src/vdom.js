@@ -4,16 +4,16 @@
  * @param {*} props 
  * @param {*} children 
  */
-export default function VDOM(tag, props, children) {
-  if(!(this instanceof VDOM)) {
-    return new VDOM(tag, props, children)
+export default function VDom(tag, props, children) {
+  if(!(this instanceof VDom)) {
+    return new VDom(tag, props, children)
   }
   this.tag = tag;
   this.props = props || {};
   this.children = children || [];
   let count = 0;
   this.children.forEach(vdom => {
-    if(vdom instanceof VDOM) {
+    if(vdom instanceof VDom) {
       count += vdom.count;
     }
     count++;
@@ -29,10 +29,10 @@ function setProps(element, props) {
 
 /**
  * 将虚拟节点渲染为真实DOM节点
- * @param {VDOM} vdom 
+ * @param {VDom} vdom 
  */
  export function createElement(vdom) {
-  if(vdom instanceof VDOM) {
+  if(vdom instanceof VDom) {
     const {tag, props, children} = vdom;
     let element = null;
     if(tag === "document-fragment") {
