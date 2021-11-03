@@ -1,8 +1,4 @@
-import VM from "./src/vm"
-
-
-
-
+import VM from "./src/index"
 var vm = VM.createApp({
   data() {
     return {

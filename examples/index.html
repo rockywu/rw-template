@@ -1,19 +1,51 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" src="./vue.js"></script>
   </head>
   <body>
     <div id="app">
       啊啊啊啊{{age}}
-      <div rw-html="3">你好{{sex}}好么》</div>
-      <div rw-if="2">我是{{name}}</div>
-      <div rw-elseif="1"></div>
-      <div rw-else>
-        <div class="aaa">t1</div>
-        <div class="bbb">t2</div>
+      <img src="" style="color:#ddd;" />
+      <div v-if="b == 1" :class="{a: classObj}"></div>
+      <div v-else-if="c == 1" @click="aaa()" :class="aa">
+        <div class="aaa">aaa{{this.t1 + this.t2}}</div>
       </div>
+      <div v-else>我是2{{name}}</div>
     </div>
     <script type="text/javascript" src="../dist/rwvm.js"></script>
+    <script>
+      var vm = new Vue({
+        el: "#app",
+        data() {
+          return {
+            classObj: {
+              color: "red"
+            },
+            b: 1,
+            a: 1,
+            c: 1,
+            age: 11,
+            sex: 'man',
+            name: "aaaa"
+          }
+        },
+        filters: {
+          val(v) {
+            return v + "-val";
+          }
+        },
+        mounted() {
+          console.log(1)
+        },
+        methods: {
+          aaa() {
+            console.log(1)
+          }
+        }
+      })
+      console.log("vue-vm", vm)
+    </script>
   </body>
   
 </html>

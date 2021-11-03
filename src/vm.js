@@ -1,6 +1,8 @@
 import {isDirective, isElementNode, isTextNode, isEventDirective, node2fragment} from './utils'
-import VDom, {createElement} from './vdom'
+import {VDom, Dom, complier, createElement} from './vdom'
 import VScope from './vscope'
+import './parser'
+import './htmlParser'
 const textRegex = /\{\{(.*)\}\}/gi
 
 function vm(options) {
@@ -13,8 +15,9 @@ vm.prototype = {
   constructor: vm,
   mount(el) {
     this.$el = isElementNode(el) ? el : document.querySelector ? document.querySelector(el) : document.getElementById(el.replace(/^#/, ''));
-    let fragment = node2fragment(this.$el);
-    this.$vdom = this.compile(fragment);
+    // let fragment = node2fragment(this.$el);
+    // console.log(444, complier(fragment))
+    // this.$vdom = this.compile(fragment);
     return this;
   },
 
@@ -37,7 +40,7 @@ vm.prototype = {
     }))
   },
   render() {
-    this.$el.appendChild(createElement(this.$vdom))
+    // this.$el.appendChild(this.$vdom.render());
   }
 }
 

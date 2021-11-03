@@ -1,10 +1,103 @@
+import {isTextNode, isElementNode, isDirective, isEventDirective} from './utils'
+import {parseHTML} from './parser/html-parser'
+import {parseText} from './parser/text-parser'
+import {parseFilters} from './parser/filter-parser'
+Object.assign(window, {
+  parseHTML,
+  parseText,
+  parseFilters
+})
+
+/**
+ * 文本元素j
+ * @param {*} fragment 
+ */
+function NodeText(fragment) {
+  this.value = fragment.nodeValue;
+}
+
+/**
+ * 节点元素
+ * @param {*} fragment 
+ */
+function NodeElm(fragment) {
+
+}
+
+/**
+ * 将node节点，解析为虚拟节点对象
+ * @param {*} fragment 
+ */
+export function complier(fragment) {
+  if(isTextNode(fragment)) {
+    return new NodeText(fragment);
+  }
+  //非文本类型元素
+  let props = {};
+  Array.from(fragment.attributes || []).forEach(function(attr) {
+    props[attr.name] = attr.value;
+  });
+  let nodeName = ("" + fragment.nodeName).replace(/^#/, "");
+  return VDom(nodeName, props, Array.from(fragment.childNodes).map(node => {
+    return complier(node);
+  }))
+
+
+
+
+}
+
+/**
+ * 解析器，将节点解析为可以序列号的虚拟dom
+ * @param {*} fragment 
+ * @returns 
+ */
+export function Dom(fragment) {
+  if(isTextNode(fragment)) {
+    return fragment.nodeValue;
+  }
+  if(!(this instanceof Dom)) {
+    return new Dom(fragment);
+  }
+  //标记
+  this.tag = '';
+  //属性
+  this.props = '';
+  //子元素
+  this.children = [];
+  //是否需要更新
+  this.canUpdate = false;
+  return this._init(fragment);
+}
+
+Dom.prototype = {
+  constructor: Dom,
+  /**
+   * 
+   * @param {*} fragment element 元素
+   */
+  _init(fragment) {
+    //非文本类型元素
+    let props = {};
+    Array.from(fragment.attributes || []).forEach(function(attr) {
+      props[attr.name] = attr.value;
+    });
+    this.tag = ("" + fragment.nodeName).replace(/^#/, "");
+    this.props = props;
+    this.children = Array.from(fragment.childNodes).map(node => {
+      return Dom(node);
+    })
+  }
+}
+
+//可以获取{{}}中的内容 /\{\{((?:.|\r?\n)+?)\}\}/g
 /**
  * 创建虚拟节点
  * @param {*} tag 
  * @param {*} props 
  * @param {*} children 
  */
-export default function VDom(tag, props, children) {
+export function VDom(tag, props, children) {
   if(!(this instanceof VDom)) {
     return new VDom(tag, props, children)
   }
@@ -20,6 +113,17 @@ export default function VDom(tag, props, children) {
   });
   this.count = count;
 }
+
+VDom.prototype = {
+  constructor: VDom,
+  render() {
+    return createElement(this);
+  }
+}
+
+
+
+
 
 function setProps(element, props) {
   for(let key in props) {
@@ -40,6 +144,7 @@ function setProps(element, props) {
     } else {
       element = document.createElement(tag);
     }
+    console.log("props", props)
     setProps(element, props);
     //创建子元素
     children.map(createElement).forEach(element.appendChild.bind(element));
@@ -47,4 +152,24 @@ function setProps(element, props) {
   } else {
     return document.createTextNode(vdom);
   }
+}
+
+/**
+ * 执行解析内容
+ * @param {*} parseValue 
+ * @param {*} scope 
+ * @returns 
+ */
+export function evalParse(parseValue, scope) {
+  let keys = Object.keys(scope);
+  let values = Object.keys(keys).map(i => {
+    let key = keys[i];
+    if(typeof scope[key] === 'function') {
+      return scope[key].bind(scope)
+    } else {
+      return scope[key];
+    }
+  });
+  keys.push("return " + parseValue);
+  return new Function(...keys).apply(null, values)
 }

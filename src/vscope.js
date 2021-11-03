@@ -34,12 +34,6 @@ function VScope(options) {
   }
 }
 
-function funcRun(scope, key) {
-  if(scope.$options && key && typeof scope.$options[key] === 'function') {
-    scope.$options[key].call(scope);
-  }
-}
-
 VScope.prototype = {
   constructor: VScope,
   _lifecycle(key) {
