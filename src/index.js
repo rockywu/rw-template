@@ -2,7 +2,8 @@ import {node2fragment} from './utils'
 import {htmlParser} from './parser/index'
 
 let dom = document.getElementById('app');
-let ast = htmlParser(dom.outerHTML);
+let html = dom.outerHTML;
+let ast = htmlParser(html);
 node2fragment(document.getElementById('app'))
 
 
@@ -21,14 +22,17 @@ function renderAst(ast, obj) {
   } else {
     //节点类型进行创建
     el = document.createElement(ast.tag);
-    ast.children = ast.children.map(child => {
+    ast.attrs.map(attr => {
+      el.setAttribute(attr.name, attr.value)
+    })
+    ast.children.map(child => {
       el.appendChild(renderAst(child, obj))
     })
   }
   return el;
 }
 
-let el = renderAst(ast, {
+let obj = {
   age: "我的年龄",
   info: "我的信息",
   name: "我的名字",
@@ -49,11 +53,16 @@ let el = renderAst(ast, {
   __rt(value) {
     return value;
   }
-})
-
+};
 function replaceNode(oldNode, newNode) {
   console.log("newNode", newNode)
   oldNode.parentNode.replaceChild(newNode, oldNode)
 }
-replaceNode(dom, el)
+replaceNode(dom, renderAst(ast, obj))
+
+setTimeout(() => {
+  obj.age = "我的年龄是19"
+  console.log('aaa', html, ast)
+  replaceNode(document.getElementById('app'), renderAst(ast, obj))
+}, 2000)
 
