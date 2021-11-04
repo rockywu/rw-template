@@ -49,3 +49,19 @@ export function node2fragment(el) {
   }
   return fragment;
 }
+
+/**
+ * 动态创建函数方法
+ * @param {*} args 
+ * @returns 
+ */
+export function _CreateFunction(args) {
+  var func = function(args) {
+    var a = [null];
+    a.push.apply(a, args);
+    var Constructor = Function.bind.apply(Function, a);
+    var instance = new Constructor();
+    return instance;
+  }
+  return func.apply(null, [args]);
+}

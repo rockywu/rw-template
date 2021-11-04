@@ -1,26 +1,18 @@
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <div id="app" 
-    data-name="app-name" 
-    data-id="app-id">
-      我的建议{{this.info|format(this.name,this.age)}}
-      __{{this.name + "---" + this.info}}__
-      <div class="name" 
-        v-bind:data-value="this.value"
-        >{{this.name}}</div>
-      <div class="info">
-        <p>
-          我的建议{{this.info|format(this.name)}}
-        </p>
-      </div>
-      <div class="age" v-for="(val, key) in this.list">02{{this.age}}-{{val}}-{{key}}</div>
-      <br />
-      <div class="age" v-for="(val) in this.list">01{{this.age}}-{{val}}</div>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+  <script id="app" type="text/template">
+    <div id="aaa">
+      <Ndd id="n1" />
+      <Nbb id="n2" >1111</Nbb>
+      aaaa{{age}}aaa
     </div>
-    <script type="text/javascript" src="../dist/vm.js"></script>
-  </body>
-  
+  </script>
+  <script type="text/javascript" src="../dist/vm.js"></script>
+</body>
+
 </html>

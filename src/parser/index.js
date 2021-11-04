@@ -29,27 +29,27 @@ export function parseFor (exp){
 }
 
 function formatAst(ast) {
-  if(ast.type === 2) {
-    //文本ast
-    ast.parse = parseText(ast.text);
-  } else {
-    ast.children = ast.children.map(one => {
-      return formatAst(one)
-    })
-    ast.attrs = ast.attrs.map(attr => {
-      if(attr.name == "v-for") {
-        //v-for语句
-        attr.parse = parseFor(attr.value);
-        console.log("v-for", attr.parse)
-      } else if(bindRE.test(attr.name)) {
-        //需要解析
-        attr.parse = parseFilters(attr.value)
-      } else {
-        attr.parse = void 0;
-      }
-      return attr;
-    })
-  }
+  // if(ast.type === 2) {
+  //   //文本ast
+  //   ast.parse = parseText(ast.text);
+  // } else {
+  //   ast.children = ast.children.map(one => {
+  //     return formatAst(one)
+  //   })
+  //   ast.attrs = ast.attrs.map(attr => {
+  //     if(attr.name == "v-for") {
+  //       //v-for语句
+  //       attr.parse = parseFor(attr.value);
+  //       console.log("v-for", attr.parse)
+  //     } else if(bindRE.test(attr.name)) {
+  //       //需要解析
+  //       attr.parse = parseFilters(attr.value)
+  //     } else {
+  //       attr.parse = void 0;
+  //     }
+  //     return attr;
+  //   })
+  // }
   return ast;
 }
 /**

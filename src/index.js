@@ -1,26 +1,28 @@
-import {node2fragment} from './utils'
+import {node2fragment, _CreateFunction} from './utils'
 import {htmlParser} from './parser/index'
 
+
 let dom = document.getElementById('app');
-let html = dom.outerHTML;
-let ast = htmlParser(html);
-node2fragment(document.getElementById('app'))
+let html = dom.innerHTML;
+console.log('html', html)
+let ast = htmlParser(html.trim());
+console.log('ast', ast)
+// node2fragment(document.getElementById('app'))
 
 
 //将ast转变为dom节点
 
 function renderAst(ast, obj, exts) { 
   exts = exts || {}
+  let extsKeys = Object.keys(exts).map(key => key);
+  let extsValues = Object.values(exts);
   let el;
   if(ast.type === 2) {
     //文本直接渲染
     if(ast.parse) {
-      let keys = Object.keys(exts).map(key => key);
-      let values = Object.values(exts);
       let val;
-      console.log("keys", keys, values)
-      if(keys.length == 2) {
-        val = new Function(keys[0], keys[1], "return " + ast.parse.expression).apply(obj, values)
+      if(extsKeys.length == 2) {
+        val = _CreateFunction(["return " + ast.parse.expression]).apply(obj, extsValues)
       } else {
         val = new Function("return " + ast.parse.expression).call(obj)
       }
@@ -35,7 +37,7 @@ function renderAst(ast, obj, exts) {
       return attr.name == 'v-for' && attr.parse && attr.parse.for ? true : false
     })
     //节点类型进行创建
-    function renderOne(exts) {
+    function renderOne(extsOne) {
       var elOne = document.createElement(ast.tag);
       // let vfor = null;
       ast.attrs.map(attr => {
@@ -44,7 +46,7 @@ function renderAst(ast, obj, exts) {
         }
       })
       ast.children.map(child => {
-        let tmps = renderAst(child, obj, exts)
+        let tmps = renderAst(child, obj, extsOne)
         if(!(tmps instanceof Array)) {
           tmps = [tmps];
         }
@@ -55,9 +57,9 @@ function renderAst(ast, obj, exts) {
       return elOne;
     }
     if(vfor) {
-      console.log("vfor.parse", vfor.parse)
+      console.log("vfor.parse", vfor.parse, exts, extsKeys.length)
       let vforParse = vfor.parse;
-      let forData = new Function("return " + vfor.parse.for).call(obj);
+      let forData = new Function("return " + vfor.parse.for).call(extsKeys.length > 0 ? exts : obj);
       // tmpExts[]
       el = Object.keys(forData).map(key => {
         let val = forData[key];
@@ -65,10 +67,10 @@ function renderAst(ast, obj, exts) {
           [vforParse.alias]: val,
           [vforParse.iterator1 || 'index']: key
         };
-        return renderOne(tmpExts)
+        return renderOne(Object.assign(tmpExts, exts))
       })
     } else {
-      return renderOne()
+      return renderOne(exts)
     }
   }
   return el;
@@ -79,10 +81,12 @@ let obj = {
   info: "我的信息",
   name: "我的名字",
   list: {
-    a: "a1",
-    b: "b2",
-    c: "c3",
-    d: "d4"
+    a: ["a1"],
+    b: ["b2"],
+  },
+  list2: {
+    a: ["a1", "a2"],
+    b: ["b1", "b2"],
   },
   filters: {
     format(value, ...args) {
@@ -104,6 +108,6 @@ let obj = {
 function replaceNode(oldNode, newNode) {
   oldNode.parentNode.replaceChild(newNode, oldNode)
 }
-replaceNode(dom, renderAst(ast, obj))
+// replaceNode(dom, renderAst(ast, obj))
 
 

@@ -145,9 +145,9 @@ var HTMLParser = function (html, handler) {
 		// If no tag name is provided, clean shop
 		if (!tagName)
 			var pos = 0;
-
 		// Find the closest opened tag of the same type
 		else
+			tagName = tagName.toLowerCase();
 			for (var pos = stack.length - 1; pos >= 0; pos--)
 				if (stack[pos] == tagName)
 					break;
@@ -186,6 +186,7 @@ export function HTMLtoAST(html) {
 			stack.pop()
 		},
 		chars(text) {
+			console.log("text", text, stack, stack.length - 1)
 			var currentParent = stack[stack.length - 1]
 			currentParent.children.push({ type: 2, text })
 		}
