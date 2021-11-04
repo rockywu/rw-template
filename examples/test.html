@@ -5,14 +5,28 @@
 </head>
 
 <body>
-  <script id="app" type="text/template">
-    <div id="aaa">
-      <Ndd id="n1" />
-      <Nbb id="n2" >1111</Nbb>
-      aaaa{{age}}aaa
+  <div id="app">
+    <div v-if="aaa"></div>
+    <div v-else-if="bbb"></div>
+    <div v-else></div>
+    <div v-if="aaa"></div>
+    <div v-else></div>
+    <div v-if="aaa"></div>
+    <div v-else></div>
+    <div v-if="aaa"></div>
+    <div v-for="(val, key) in this.list">
+      {{val}} -- {{key}}
     </div>
-  </script>
+    <div v-for="(val) in this.list" v-if="this.aaa">
+      {{val}} -- {{key}}
+    </div>
+    aaaa{{this.age}}aaa
+  </div>
   <script type="text/javascript" src="../dist/vm.js"></script>
+  <script type="text/javascript">
+
+
+  </script>
 </body>
 
 </html>

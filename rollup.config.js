@@ -1,6 +1,8 @@
 import babel from 'rollup-plugin-babel'
 import serve from 'rollup-plugin-serve'
 import livereload from 'rollup-plugin-livereload'
+import replace from 'rollup-plugin-replace'
+
 export default [
     // {
     //     input: "./rw.js",
@@ -20,11 +22,16 @@ export default [
             sourcemap: true
         },
         plugins: [
+            replace({
+                'process.env.NODE_ENV': JSON.stringify('development'),
+                'process.env.VBIND_PROP_SHORTHAND': 'false',
+                'process.env.NEW_SLOT_SYNTAX': 'true'
+            }),
             babel({
                 exclude: "node_modules/**"
             }),
             livereload({
-            watch: 'dist'
+                watch: 'dist'
             }),
             serve({
                 open: true,

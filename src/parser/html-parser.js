@@ -186,7 +186,6 @@ export function HTMLtoAST(html) {
 			stack.pop()
 		},
 		chars(text) {
-			console.log("text", text, stack, stack.length - 1)
 			var currentParent = stack[stack.length - 1]
 			currentParent.children.push({ type: 2, text })
 		}

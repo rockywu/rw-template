@@ -1,34 +1,32 @@
-/* @flow */
-
-export const emptyObject = Object.freeze({})
+export const emptyObject = {};
 
 // These helpers produce better VM code in JS engines due to their
 // explicitness and function inlining.
-export function isUndef (v: any): boolean %checks {
+export function isUndef(v) {
   return v === undefined || v === null
 }
 
-export function isDef (v: any): boolean %checks {
+export function isDef(v) {
   return v !== undefined && v !== null
 }
 
-export function isTrue (v: any): boolean %checks {
+export function isTrue(v) {
   return v === true
 }
 
-export function isFalse (v: any): boolean %checks {
+export function isFalse(v) {
   return v === false
 }
 
 /**
- * Check if value is primitive.
+ * 是否为基础类型
+ * @param {*} value 
+ * @returns 
  */
-export function isPrimitive (value: any): boolean %checks {
+export function isPrimitive(value) {
   return (
     typeof value === 'string' ||
     typeof value === 'number' ||
-    // $flow-disable-line
-    typeof value === 'symbol' ||
     typeof value === 'boolean'
   )
 }
@@ -38,7 +36,7 @@ export function isPrimitive (value: any): boolean %checks {
  * Objects from primitive values when we know the value
  * is a JSON-compliant type.
  */
-export function isObject (obj: mixed): boolean %checks {
+export function isObject(obj) {
   return obj !== null && typeof obj === 'object'
 }
 
@@ -47,7 +45,12 @@ export function isObject (obj: mixed): boolean %checks {
  */
 const _toString = Object.prototype.toString
 
-export function toRawType (value: any): string {
+/**
+ * 获取string类型
+ * @param {*} value 
+ * @returns 
+ */
+export function toRawType(value) {
   return _toString.call(value).slice(8, -1)
 }
 
@@ -55,23 +58,23 @@ export function toRawType (value: any): string {
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
  */
-export function isPlainObject (obj: any): boolean {
+export function isPlainObject(obj) {
   return _toString.call(obj) === '[object Object]'
 }
 
-export function isRegExp (v: any): boolean {
+export function isRegExp(v) {
   return _toString.call(v) === '[object RegExp]'
 }
 
 /**
  * Check if val is a valid array index.
  */
-export function isValidArrayIndex (val: any): boolean {
+export function isValidArrayIndex(val) {
   const n = parseFloat(String(val))
   return n >= 0 && Math.floor(n) === n && isFinite(val)
 }
 
-export function isPromise (val: any): boolean {
+export function isPromise(val) {
   return (
     isDef(val) &&
     typeof val.then === 'function' &&
@@ -82,7 +85,7 @@ export function isPromise (val: any): boolean {
 /**
  * Convert a value to a string that is actually rendered.
  */
-export function toString (val: any): string {
+export function toString(val) {
   return val == null
     ? ''
     : Array.isArray(val) || (isPlainObject(val) && val.toString === _toString)
@@ -94,7 +97,7 @@ export function toString (val: any): string {
  * Convert an input value to a number for persistence.
  * If the conversion fails, return original string.
  */
-export function toNumber (val: string): number | string {
+export function toNumber(val) {
   const n = parseFloat(val)
   return isNaN(n) ? val : n
 }
@@ -103,18 +106,18 @@ export function toNumber (val: string): number | string {
  * Make a map and return a function for checking if a key
  * is in that map.
  */
-export function makeMap (
-  str: string,
-  expectsLowerCase?: boolean
-): (key: string) => true | void {
-  const map = Object.create(null)
-  const list: Array<string> = str.split(',')
+export function makeMap(str, expectsLowerCase = false) {
+  const map = {};
+  let list = str.split(',');
   for (let i = 0; i < list.length; i++) {
-    map[list[i]] = true
+    map[list[i]] = true;
   }
-  return expectsLowerCase
-    ? val => map[val.toLowerCase()]
-    : val => map[val]
+  return function (val) {
+    if (expectsLowerCase) {
+      val = val.toLowerCase();
+    }
+    return map[val];
+  }
 }
 
 /**
@@ -130,7 +133,7 @@ export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 /**
  * Remove an item from an array.
  */
-export function remove (arr: Array<any>, item: any): Array<any> | void {
+export function remove(arr, item) {
   if (arr.length) {
     const index = arr.indexOf(item)
     if (index > -1) {
@@ -143,33 +146,35 @@ export function remove (arr: Array<any>, item: any): Array<any> | void {
  * Check whether an object has the property.
  */
 const hasOwnProperty = Object.prototype.hasOwnProperty
-export function hasOwn (obj: Object | Array<*>, key: string): boolean {
+export function hasOwn(obj, key) {
   return hasOwnProperty.call(obj, key)
 }
 
 /**
  * Create a cached version of a pure function.
  */
-export function cached<F: Function> (fn: F): F {
-  const cache = Object.create(null)
-  return (function cachedFn (str: string) {
+const cache = {};
+export function cached(fn) {
+  return (function cachedFn(str) {
     const hit = cache[str]
     return hit || (cache[str] = fn(str))
-  }: any)
+  })
 }
 
 /**
  * Camelize a hyphen-delimited string.
+ * 转为驼峰
  */
 const camelizeRE = /-(\w)/g
-export const camelize = cached((str: string): string => {
+export const camelize = cached((str) => {
   return str.replace(camelizeRE, (_, c) => c ? c.toUpperCase() : '')
 })
 
 /**
  * Capitalize a string.
+ * 转为首字母大写
  */
-export const capitalize = cached((str: string): string => {
+export const capitalize = cached((str) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 })
 
@@ -177,48 +182,26 @@ export const capitalize = cached((str: string): string => {
  * Hyphenate a camelCase string.
  */
 const hyphenateRE = /\B([A-Z])/g
-export const hyphenate = cached((str: string): string => {
+export const hyphenate = cached(() => {
   return str.replace(hyphenateRE, '-$1').toLowerCase()
 })
 
-/**
- * Simple bind polyfill for environments that do not support it,
- * e.g., PhantomJS 1.x. Technically, we don't need this anymore
- * since native bind is now performant enough in most browsers.
- * But removing it would mean breaking code that was able to run in
- * PhantomJS 1.x, so this must be kept for backward compatibility.
- */
-
-/* istanbul ignore next */
-function polyfillBind (fn: Function, ctx: Object): Function {
-  function boundFn (a) {
-    const l = arguments.length
-    return l
-      ? l > 1
-        ? fn.apply(ctx, arguments)
-        : fn.call(ctx, a)
-      : fn.call(ctx)
-  }
-
-  boundFn._length = fn.length
-  return boundFn
-}
-
-function nativeBind (fn: Function, ctx: Object): Function {
+function nativeBind(fn, ctx) {
   return fn.bind(ctx)
 }
 
-export const bind = Function.prototype.bind
-  ? nativeBind
-  : polyfillBind
+/**
+ * 兼容bind
+ */
+export const bind = nativeBind;
 
 /**
  * Convert an Array-like object to a real Array.
  */
-export function toArray (list: any, start?: number): Array<any> {
+export function toArray(list, start) {
   start = start || 0
   let i = list.length - start
-  const ret: Array<any> = new Array(i)
+  const ret = new Array(i)
   while (i--) {
     ret[i] = list[i + start]
   }
@@ -228,7 +211,7 @@ export function toArray (list: any, start?: number): Array<any> {
 /**
  * Mix properties into target object.
  */
-export function extend (to: Object, _from: ?Object): Object {
+export function extend(to, _from) {
   for (const key in _from) {
     to[key] = _from[key]
   }
@@ -238,7 +221,7 @@ export function extend (to: Object, _from: ?Object): Object {
 /**
  * Merge an Array of Objects into a single Object.
  */
-export function toObject (arr: Array<any>): Object {
+export function toObject(arr) {
   const res = {}
   for (let i = 0; i < arr.length; i++) {
     if (arr[i]) {
@@ -247,32 +230,27 @@ export function toObject (arr: Array<any>): Object {
   }
   return res
 }
-
-/* eslint-disable no-unused-vars */
-
 /**
  * Perform no operation.
  * Stubbing args to make Flow happy without leaving useless transpiled code
  * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/).
  */
-export function noop (a?: any, b?: any, c?: any) {}
+export function noop() { }
 
 /**
  * Always return false.
  */
-export const no = (a?: any, b?: any, c?: any) => false
-
-/* eslint-enable no-unused-vars */
+export const no = () => false
 
 /**
  * Return the same value.
  */
-export const identity = (_: any) => _
+export const identity = (_) => _
 
 /**
  * Generate a string containing static keys from compiler modules.
  */
-export function genStaticKeys (modules: Array<ModuleOptions>): string {
+export function genStaticKeys(modules) {
   return modules.reduce((keys, m) => {
     return keys.concat(m.staticKeys || [])
   }, []).join(',')
@@ -282,7 +260,7 @@ export function genStaticKeys (modules: Array<ModuleOptions>): string {
  * Check if two values are loosely equal - that is,
  * if they are plain objects, do they have the same shape?
  */
-export function looseEqual (a: any, b: any): boolean {
+export function looseEqual(ab) {
   if (a === b) return true
   const isObjectA = isObject(a)
   const isObjectB = isObject(b)
@@ -322,7 +300,7 @@ export function looseEqual (a: any, b: any): boolean {
  * found in the array (if value is a plain object, the array must
  * contain an object of the same shape), or -1 if it is not present.
  */
-export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
+export function looseIndexOf(arr, val) {
   for (let i = 0; i < arr.length; i++) {
     if (looseEqual(arr[i], val)) return i
   }
@@ -332,7 +310,7 @@ export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
 /**
  * Ensure a function is called only once.
  */
-export function once (fn: Function): Function {
+export function once(fn) {
   let called = false
   return function () {
     if (!called) {
@@ -341,3 +319,44 @@ export function once (fn: Function): Function {
     }
   }
 }
+
+export const isUnaryTag = makeMap(
+  'area,base,br,col,embed,frame,hr,img,input,isindex,keygen,' +
+  'link,meta,param,source,track,wbr'
+)
+
+// Elements that you can, intentionally, leave open
+// (and which close themselves)
+export const canBeLeftOpenTag = makeMap(
+  'colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr,source'
+)
+
+// HTML5 tags https://html.spec.whatwg.org/multipage/indices.html#elements-3
+// Phrasing Content https://html.spec.whatwg.org/multipage/dom.html#phrasing-content
+export const isNonPhrasingTag = makeMap(
+  'address,article,aside,base,blockquote,body,caption,col,colgroup,dd,' +
+  'details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,' +
+  'h1,h2,h3,h4,h5,h6,head,header,hgroup,hr,html,legend,li,menuitem,meta,' +
+  'optgroup,option,param,rp,rt,source,style,summary,tbody,td,tfoot,th,thead,' +
+  'title,tr,track'
+)
+
+/**
+ * unicode letters used for parsing html tags, component names and property paths.
+ * using https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
+ * skipping \u10000-\uEFFFF due to it freezing up PhantomJS
+ */
+export const unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/
+
+
+// Browser environment sniffing
+export const inBrowser = typeof window !== 'undefined'
+export const UA = inBrowser && window.navigator.userAgent.toLowerCase()
+export const isIE = UA && /msie|trident/.test(UA)
+export const isIE9 = UA && UA.indexOf('msie 9.0') > 0
+export const isEdge = UA && UA.indexOf('edge/') > 0
+export const isAndroid = (UA && UA.indexOf('android') > 0);
+export const isIOS = (UA && /iphone|ipad|ipod|ios/.test(UA));
+export const isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge
+export const isPhantomJS = UA && /phantomjs/.test(UA)
+export const isFF = UA && UA.match(/firefox\/(\d+)/)
